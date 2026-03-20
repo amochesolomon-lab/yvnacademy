@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YVN Academy</title>
+<link rel="stylesheet" href="static/css/style.css">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+<div class="page-animate">
+
+<!-- ====== NAVBAR ====== -->
+<nav class="navbar">
+
+  <a href="/" class="logo"><img src="static/images/YVN Academy logo.png" alt="YVN Academy" class="logo-img"></a>
+
+  <!-- Categories dropdown trigger -->
+  <div class="nav-categories">
+    <button class="categories-btn">
+      <span class="hamburger-icon">&#9776;</span> Categories
+    </button>
+    <div class="categories-dropdown">
+      <a href="#">Web Development</a>
+      <a href="#">Graphic Design</a>
+      <a href="#">Artificial Intelligence</a>
+      <a href="#">Business & Finance</a>
+      <a href="#">CopyWriting</a>
+      <a href="#">Public Speaking</a>
+      <a href="#">Personal Development</a>
+    </div>
+  </div>
+
+  <!-- Search bar -->
+  <div class="search-bar">
+    <span class="search-icon">&#128269;</span>
+    <input type="text" placeholder="Search for anything">
+    <div class="search-suggestions"></div>
+  </div>
+
+  <!-- Nav links -->
+  <div class="nav-links">
+    <a href="/courses">Courses</a>
+    <a href="/login" class="nav-login">Login</a>
+    <a href="/register" class="nav-signup">Sign Up</a>
+  </div>
+
+</nav>
+
+<!-- ====== HERO ====== -->
+<section class="hero">
+
+  <!-- Background slides (desktop) -->
+  <div class="hero-slides">
+    <div class="hero-slide active" style="background-image:url('static/images/hero.png')"></div>
+    <div class="hero-slide" style="background-image:url('static/images/graphics 2.png')"></div>
+    <div class="hero-slide" style="background-image:url('static/images/graphics 3.png')"></div>
+  </div>
+
+  <!-- Mobile image (shown only on mobile) - Udemy style -->
+  <div class="hero-mobile-img">
+    <img id="hero-mobile-img" src="static/images/hero.png" alt="Hero">
+  </div>
+
+  <!-- Dark overlay -->
+  <div class="hero-overlay"></div>
+
+  <!-- Wave shimmer -->
+  <div class="wave-bg"></div>
+
+  <!-- Content -->
+  <div class="hero-container">
+
+    <div class="hero-text">
+      <p class="hero-label" id="hero-label">Featured Course</p>
+      <h1 id="hero-title">Learn AI Without Limits</h1>
+      <p id="hero-subtitle">Build skills with AI tools and real projects</p>
+      <div class="hero-actions">
+        <button id="hero-btn" class="hero-btn">Start Learning</button>
+      </div>
+    </div>
+
+
+
+  </div>
+
+  <!-- Dot indicators -->
+  <div class="hero-dots">
+    <span class="hero-dot active" data-index="0"></span>
+    <span class="hero-dot" data-index="1"></span>
+    <span class="hero-dot" data-index="2"></span>
+  </div>
+
+</section>
+
+<!-- ====== FEATURED TOPICS ====== -->
+<section class="topics-section">
+  <h2>More Courses Coming soon!!</h2>
+  <div class="topics-cards">
+    <div class="topic-card">Graphic Design</div>
+    <div class="topic-card">Web Development</div>
+    <div class="topic-card">AI Mastery</div>
+    <div class="topic-card">Business</div>
+    <div class="topic-card">CopyWriting</div>
+    <div class="topic-card">Personal Development</div>
+  </div>
+</section>
+
+<!-- ====== COURSES ====== -->
+<section class="courses-section">
+
+  <h2>Available Courses</h2>
+  <p class="section-subtitle">Expand your skills with our expert-led courses. More Courses Coming soon!!</p>
+
+  <div class="courses-grid">
+
+    {% for course in courses %}
+
+    <a href="/course/{{ course.id }}" class="course-link">
+      <div class="course-card">
+
+        <div class="course-image">
+          <img src="{{ url_for('static', filename='images/' + course.thumbnail) if course.thumbnail else url_for('static', filename='images/placeholder.png') }}" alt="{{ course.title }}">
+          <div class="course-hover-overlay">
+            <div class="hover-info">
+              <p class="hover-title">{{ course.title }}</p>
+              <p class="hover-desc">What you'll learn in this course</p>
+              <button class="hover-enroll-btn">Enroll Now</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="course-content">
+          <h3>{{ course.title }}</h3>
+          <p class="instructor">{{ course.instructor }}</p>
+          <div class="course-meta">
+            <span class="rating">4.8</span>
+            <span class="students">1k+ Students Recommend</span>
+          </div>
+          <div class="course-footer">
+            <p class="price">&#8358;{{ course.price }}</p>
+            <span class="badge">Bestseller</span>
+          </div>
+        </div>
+
+      </div>
+    </a>
+
+    {% endfor %}
+
+  </div>
+</section>
+
+<!-- ====== BECOME INSTRUCTOR BANNER ====== -->
+<section class="instructor-banner">
+  <div class="instructor-banner-inner">
+    <div class="instructor-text">
+      <h2>Become an Instructor</h2>
+      <p>Share your knowledge and earn by teaching what you love on YVN Academy.</p>
+      <a href="https://wa.me/2349017186100?text=Good%20day%20ma'am%2C%20I%20want%20to%20become%20an%20instructor%20in%20YVN%20Academy" target="_blank" class="instructor-cta">Start Teaching Today</a>
+    </div>
+    <div class="instructor-img">
+      <img src="static/images/instructor.jg.jpg" alt="Instructor">
+    </div>
+  </div>
+</section>
+
+<!-- ====== FOOTER ====== -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-col">
+      <div class="footer-logo"><img src="static/images/YVN Academy logo.png" alt="YVN Academy" class="footer-logo-img"></div>
+      <p>Learn anything. Grow faster. Build your future.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Company</h4>
+      <a href="https://wa.me/2349017186100?text=Good%20day%20ma'am%2C%20I%20want%20to%20Join%20Yielded%20Vessel%20Network%2C%20or%2C%20I%20have%20a%20question" target="_blank">About</a>
+      <a href="#">Careers</a>
+      <a href="#">Blog</a>
+    </div>
+    <div class="footer-col">
+      <h4>Support</h4>
+      <a href="https://wa.me/2349017186100?text=Good%20day%20ma'am%2C%20I%20want%20to%20Join%20Yielded%20Vessel%20Network%2C%20or%2C%20I%20have%20a%20question" target="_blank">Help Center</a>
+      <a href="https://wa.me/2349017186100?text=Good%20day%20ma'am%2C%20I%20want%20to%20Join%20Yielded%20Vessel%20Network%2C%20or%2C%20I%20have%20a%20question" target="_blank">Contact</a>
+      <a href="#">Privacy Policy</a>
+    </div>
+    <div class="footer-col">
+      <h4>Community</h4>
+      <a href="https://wa.me/2349017186100?text=Good%20day%20ma'am%2C%20I%20want%20to%20Join%20Yielded%20Vessel%20Network%2C%20or%2C%20I%20have%20a%20question" target="_blank">Affiliates</a>
+      <a href="https://wa.me/2349017186100?text=Good%20day%20ma'am%2C%20I%20want%20to%20become%20an%20instructor%20in%20YVN%20Academy" target="_blank">Teach on YVN</a>
+      <a href="https://wa.me/2349017186100?text=Good%20day%20ma'am%2C%20I%20want%20to%20Join%20Yielded%20Vessel%20Network%2C%20or%2C%20I%20have%20a%20question" target="_blank">Referrals</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2025 YVN Academy. All rights reserved.</span>
+  </div>
+</footer>
+
+</div><!-- end page-animate -->
+
+<script src="static/js/script.js"></script>
+</body>
+</html>

@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="admin-page">
+
+  <div class="admin-header">
+    <div class="admin-header-inner">
+      <div>
+        <p class="admin-label">Admin Panel</p>
+        <h1 class="admin-title">Edit Course</h1>
+        <p class="admin-sub">Update the details for "{{ course.title }}"</p>
+      </div>
+      <a href="/admin/courses" class="admin-action-btn">← Back to Courses</a>
+    </div>
+  </div>
+
+  <div class="add-course-wrap">
+    <div class="add-course-card">
+
+      <form method="POST" enctype="multipart/form-data" class="add-course-form">
+
+        <div class="form-group">
+          <label>Course Title</label>
+          <input type="text" name="title" value="{{ course.title }}" required>
+        </div>
+
+        <div class="form-group">
+          <label>Instructor Name</label>
+          <input type="text" name="instructor" value="{{ course.instructor }}" required>
+        </div>
+
+        <div class="form-group">
+          <label>Description</label>
+          <textarea name="description" rows="4" required>{{ course.description }}</textarea>
+        </div>
+
+        <!-- Course Type -->
+        <div class="form-group">
+          <label>Course Type</label>
+          <div class="course-type-toggle">
+            <label class="type-option {% if course.course_type != 'pdf' %}active{% endif %}" id="videoLabel">
+              <input type="radio" name="course_type" value="video"
+                {% if course.course_type != 'pdf' %}checked{% endif %}
+                onchange="toggleCourseType()">
+              <span class="type-icon">▶</span>
+              <span class="type-text">
+                <strong>Video Course</strong>
+                <small>Link to Telegram channel</small>
+              </span>
+            </label>
+            <label class="type-option {% if course.course_type == 'pdf' %}active{% endif %}" id="pdfLabel">
+              <input type="radio" name="course_type" value="pdf"
+                {% if course.course_type == 'pdf' %}checked{% endif %}
+                onchange="toggleCourseType()">
+              <span class="type-icon">&#128196;</span>
+              <span class="type-text">
+                <strong>PDF Course</strong>
+                <small>Upload a PDF file directly</small>
+              </span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Video fields -->
+        <div id="videoFields" {% if course.course_type == 'pdf' %}style="display:none;"{% endif %}>
+          <div class="form-group">
+            <label>Telegram Course Link</label>
+            <input type="text" name="telegram_link" value="{{ course.telegram_link or '' }}" placeholder="https://t.me/...">
+          </div>
+        </div>
+
+        <!-- PDF fields -->
+        <div id="pdfFields" {% if course.course_type != 'pdf' %}style="display:none;"{% endif %}>
+          <div class="form-group">
+            <label>Upload PDF File</label>
+            {% if course.pdf_file %}
+              <p class="form-hint">Current file: <strong>{{ course.pdf_file }}</strong> — upload a new one to replace it</p>
+            {% endif %}
+            <input type="file" name="pdf_file" accept=".pdf">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Course Thumbnail</label>
+            {% if course.thumbnail %}
+              <div class="current-thumbnail">
+                <img src="{{ url_for('static', filename='images/' + course.thumbnail) }}" alt="Thumbnail">
+                <p>Upload new to replace</p>
+              </div>
+            {% endif %}
+            <input type="file" name="thumbnail" accept="image/*">
+          </div>
+          <div class="form-group">
+            <label>Price (&#8358;)</label>
+            <input type="number" name="price" value="{{ course.price }}" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Visibility</label>
+          <select name="is_active" class="form-select">
+            <option value="1" {% if course.is_active %}selected{% endif %}>Visible to students</option>
+            <option value="0" {% if not course.is_active %}selected{% endif %}>Hidden from students</option>
+          </select>
+        </div>
+
+        <button type="submit" class="add-course-submit">Save Changes</button>
+
+      </form>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+function toggleCourseType() {
+  const isVideo = document.querySelector('input[name="course_type"]:checked').value === 'video';
+  document.getElementById('videoFields').style.display = isVideo ? 'block' : 'none';
+  document.getElementById('pdfFields').style.display   = isVideo ? 'none' : 'block';
+  document.getElementById('videoLabel').classList.toggle('active', isVideo);
+  document.getElementById('pdfLabel').classList.toggle('active', !isVideo);
+}
+</script>
+
+{% endblock %}

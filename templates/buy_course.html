@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container">
+
+<h2>Buy {{ course['title'] }}</h2>
+
+<h3>Bank Transfer Details</h3>
+
+<p><strong>Bank:</strong> OPAY </p>
+<p><strong>Account Name:</strong> Nwanga Onyinye Eucharia</p>
+<p><strong>Account Number:</strong> 9017186100</p>
+
+<p>After making payment, upload your receipt below.</p>
+
+<form method="POST" enctype="multipart/form-data">
+
+<input type="file" name="receipt" required>
+
+<button type="submit">Submit Receipt</button>
+
+</form>
+
+</div>
+
+{% endblock %}
