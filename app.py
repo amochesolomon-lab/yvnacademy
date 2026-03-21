@@ -16,102 +16,127 @@ app.secret_key = os.getenv("SECRET_KEY")
 # ==============================================================
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-if DATABASE_URL:
-    # Running on Render with PostgreSQL
-    import psycopg2
-    import psycopg2.extras
+# ==============================================================
+# UNIVERSAL DB CONNECTION
+# Works the same way for both SQLite and PostgreSQL
+# ==============================================================
+class DBConnection:
+    """Wrapper that makes psycopg2 behave like sqlite3 Row connections."""
 
-    def get_db_connection():
-        # Render gives postgres:// but psycopg2 needs postgresql://
-        url = DATABASE_URL.replace("postgres://", "postgresql://", 1)
-        conn = psycopg2.connect(url)
-        conn.autocommit = False
-        return conn
+    def __init__(self):
+        if DATABASE_URL:
+            import psycopg2
+            import psycopg2.extras
+            url = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+            self._conn = psycopg2.connect(url)
+            self._is_pg = True
+        else:
+            self._conn = sqlite3.connect('database.db')
+            self._conn.row_factory = sqlite3.Row
+            self._is_pg = False
 
-    def init_db():
-        conn = get_db_connection()
-        cur = conn.cursor()
-        cur.execute("""
-            CREATE TABLE IF NOT EXISTS users (
-                id SERIAL PRIMARY KEY,
-                name TEXT NOT NULL,
-                email TEXT UNIQUE NOT NULL,
-                password TEXT NOT NULL
-            )
-        """)
-        cur.execute("""
-            CREATE TABLE IF NOT EXISTS courses (
-                id SERIAL PRIMARY KEY,
-                title TEXT NOT NULL,
-                instructor TEXT NOT NULL,
-                description TEXT,
-                telegram_link TEXT,
-                price TEXT,
-                thumbnail TEXT DEFAULT '',
-                is_active INTEGER DEFAULT 1,
-                course_type TEXT DEFAULT 'video',
-                pdf_file TEXT DEFAULT ''
-            )
-        """)
-        cur.execute("""
-            CREATE TABLE IF NOT EXISTS purchases (
-                id SERIAL PRIMARY KEY,
-                user_id INTEGER NOT NULL,
-                course_id INTEGER NOT NULL,
-                receipt TEXT,
-                status TEXT DEFAULT 'pending'
-            )
-        """)
-        conn.commit()
-        cur.close()
-        conn.close()
+    def execute(self, sql, params=()):
+        # PostgreSQL uses %s placeholders, SQLite uses ?
+        if self._is_pg:
+            sql = sql.replace("?", "%s")
+            cur = self._conn.cursor(cursor_factory=__import__('psycopg2').extras.RealDictCursor)
+            cur.execute(sql, params)
+            return _PGResult(cur)
+        else:
+            return self._conn.execute(sql, params)
 
-    # Initialize DB tables on startup
-    with app.app_context():
-        init_db()
+    def commit(self):
+        self._conn.commit()
 
-else:
-    # Running on SQLite (local or Render without PostgreSQL)
-    def get_db_connection():
-        conn = sqlite3.connect('database.db')
-        conn.row_factory = sqlite3.Row
-        return conn
+    def close(self):
+        self._conn.close()
 
-    def init_db():
-        conn = get_db_connection()
-        conn.execute(
-            "CREATE TABLE IF NOT EXISTS users ("
-            "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-            "name TEXT NOT NULL,"
-            "email TEXT UNIQUE NOT NULL,"
-            "password TEXT NOT NULL)"
-        )
-        conn.execute(
-            "CREATE TABLE IF NOT EXISTS courses ("
-            "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-            "title TEXT NOT NULL,"
-            "instructor TEXT NOT NULL,"
-            "description TEXT,"
-            "telegram_link TEXT,"
-            "price TEXT,"
-            "thumbnail TEXT DEFAULT '',"
-            "is_active INTEGER DEFAULT 1,"
-            "course_type TEXT DEFAULT 'video',"
-            "pdf_file TEXT DEFAULT '')"
-        )
-        conn.execute(
-            "CREATE TABLE IF NOT EXISTS purchases ("
-            "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-            "user_id INTEGER NOT NULL,"
-            "course_id INTEGER NOT NULL,"
-            "receipt TEXT,"
-            "status TEXT DEFAULT 'pending')"
-        )
-        conn.commit()
-        conn.close()
+    def __enter__(self):
+        return self
 
-    with app.app_context():
-        init_db()
+    def __exit__(self, *args):
+        self.close()
+
+
+class _PGResult:
+    """Makes psycopg2 cursor results behave like sqlite3 results."""
+    def __init__(self, cur):
+        self._cur = cur
+
+    def fetchall(self):
+        rows = self._cur.fetchall()
+        return [dict(r) for r in rows] if rows else []
+
+    def fetchone(self):
+        row = self._cur.fetchone()
+        return dict(row) if row else None
+
+
+def get_db_connection():
+    return DBConnection()
+
+
+def init_db():
+    conn = get_db_connection()
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS users ("
+        "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+        "name TEXT NOT NULL,"
+        "email TEXT UNIQUE NOT NULL,"
+        "password TEXT NOT NULL)"
+        if not DATABASE_URL else
+        "CREATE TABLE IF NOT EXISTS users ("
+        "id SERIAL PRIMARY KEY,"
+        "name TEXT NOT NULL,"
+        "email TEXT UNIQUE NOT NULL,"
+        "password TEXT NOT NULL)"
+    )
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS courses ("
+        "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+        "title TEXT NOT NULL,"
+        "instructor TEXT NOT NULL,"
+        "description TEXT,"
+        "telegram_link TEXT,"
+        "price TEXT,"
+        "thumbnail TEXT DEFAULT '',"
+        "is_active INTEGER DEFAULT 1,"
+        "course_type TEXT DEFAULT 'video',"
+        "pdf_file TEXT DEFAULT '')"
+        if not DATABASE_URL else
+        "CREATE TABLE IF NOT EXISTS courses ("
+        "id SERIAL PRIMARY KEY,"
+        "title TEXT NOT NULL,"
+        "instructor TEXT NOT NULL,"
+        "description TEXT,"
+        "telegram_link TEXT,"
+        "price TEXT,"
+        "thumbnail TEXT DEFAULT '',"
+        "is_active INTEGER DEFAULT 1,"
+        "course_type TEXT DEFAULT 'video',"
+        "pdf_file TEXT DEFAULT '')"
+    )
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS purchases ("
+        "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+        "user_id INTEGER NOT NULL,"
+        "course_id INTEGER NOT NULL,"
+        "receipt TEXT,"
+        "status TEXT DEFAULT 'pending')"
+        if not DATABASE_URL else
+        "CREATE TABLE IF NOT EXISTS purchases ("
+        "id SERIAL PRIMARY KEY,"
+        "user_id INTEGER NOT NULL,"
+        "course_id INTEGER NOT NULL,"
+        "receipt TEXT,"
+        "status TEXT DEFAULT 'pending')"
+    )
+    conn.commit()
+    conn.close()
+
+
+with app.app_context():
+    init_db()
 
 # ==============================================================
 # CONTEXT PROCESSOR
@@ -177,7 +202,8 @@ def register():
             conn.close()
             flash("Account created! Please log in.")
             return redirect(url_for('login'))
-        except sqlite3.IntegrityError:
+        except (sqlite3.IntegrityError, Exception) as e:
+            if 'unique' not in str(e).lower() and 'duplicate' not in str(e).lower(): raise
             conn.close()
             flash("Email already registered. Please log in.")
             return redirect(url_for('register'))
