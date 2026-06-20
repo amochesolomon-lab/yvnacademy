@@ -891,6 +891,34 @@ app.get('/_health', (req, res) => {
   });
 });
 
+// Secure one-time migration trigger (POST /_migrate)
+// Protect by header 'x-migrate-secret' which must match MIGRATE_SECRET env var or SECRET_KEY
+let migrationHasRun = false;
+app.post('/_migrate', async (req, res) => {
+  const secret = req.header('x-migrate-secret');
+  const expected = process.env.MIGRATE_SECRET || process.env.SECRET_KEY;
+  if (!expected || secret !== expected) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  if (migrationHasRun) {
+    return res.status(409).json({ error: 'Migration already run in this process' });
+  }
+
+  // require here to keep startup lightweight
+  try {
+    const { migrate } = require('./scripts/migrate-lib');
+    const databaseUrl = process.env.DATABASE_URL;
+    if (!databaseUrl) return res.status(500).json({ error: 'DATABASE_URL not configured' });
+    migrationHasRun = true;
+    await migrate(databaseUrl);
+    return res.json({ message: 'Migration completed' });
+  } catch (err) {
+    migrationHasRun = false;
+    console.error('Migration endpoint error:', err);
+    return res.status(500).json({ error: 'Migration failed', details: String(err) });
+  }
+});
+
 // Start Server
 app.listen(PORT, async () => {
   try {
