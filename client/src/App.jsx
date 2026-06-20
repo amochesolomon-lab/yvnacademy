@@ -38,6 +38,8 @@ import {
   UserCheck,
 } from "lucide-react";
 
+import { apiUrl } from "./lib/api";
+
 const resolveMediaSrc = (value, folder, fallback = "") => {
   if (!value) return fallback;
   if (
@@ -48,7 +50,8 @@ const resolveMediaSrc = (value, folder, fallback = "") => {
   ) {
     return value;
   }
-  return folder ? `/static/${folder}/${value}` : fallback;
+  // Use apiUrl so assets load from configured API base when deployed separately
+  return folder ? apiUrl(`/static/${folder}/${value}`) : fallback;
 };
 
 const resolveImageSrc = (value) =>
