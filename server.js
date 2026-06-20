@@ -882,6 +882,15 @@ if (process.env.NODE_ENV === 'production' || fs.existsSync(path.join(__dirname, 
   });
 }
 
+// Health check endpoint (useful for Render / uptime checks)
+app.get('/_health', (req, res) => {
+  res.json({
+    status: 'ok',
+    uptime: process.uptime(),
+    env: process.env.NODE_ENV || 'development'
+  });
+});
+
 // Start Server
 app.listen(PORT, async () => {
   try {
