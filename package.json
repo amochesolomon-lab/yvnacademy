@@ -6,7 +6,7 @@
   "scripts": {
     "build": "npm run vercel-build",
     "generate:sitemap": "node scripts/generate-sitemap.mjs",
-    "vercel-build": "npm run generate:sitemap && npm --prefix client run build",
+    "vercel-build": "npm run generate:sitemap && npm --prefix client run build && rm -rf dist && cp -r client/dist dist",
     "start": "node server.js",
     "dev": "nodemon server.js",
     "init-db": "node init-db.js"
