@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { apiUrl, resolveAssetUrl } from '../lib/api';
 import { Link, useNavigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Search, Grid, Sun, Moon, LogOut, Menu, Home, BookOpenText, Info, LayoutDashboard, Heart, UserRoundPlus, LogIn } from 'lucide-react';
@@ -73,7 +74,7 @@ export default function Layout() {
 
   // Fetch courses list for search autocomplete
   useEffect(() => {
-    fetch('/api/courses')
+    apiFetch('/api/courses')
       .then((res) => res.json())
       .then((data) => setCourses(data))
       .catch((err) => console.error('Error fetching courses for search:', err));
@@ -136,7 +137,7 @@ export default function Layout() {
         <div className="mobile-nav-logo" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingRight: '24px' }}>
           <Link to="/">
             <img
-              src="/static/images/YVN Academy logo.png"
+              src={resolveAssetUrl('YVN Academy logo.png','images','/static/images/YVN Academy logo.png')}
               alt="YVN Academy"
               className="logo-img"
             />
@@ -206,7 +207,7 @@ export default function Layout() {
       <nav className="navbar">
         <Link to="/" className="logo">
           <img
-            src="/static/images/YVN Academy logo.png"
+            src={resolveAssetUrl('YVN Academy logo.png','images','/static/images/YVN Academy logo.png')}
             alt="YVN Academy"
             className="logo-img"
           />
@@ -381,7 +382,7 @@ export default function Layout() {
           <div className="footer-col">
             <div className="footer-logo">
               <img
-                src="/static/images/YVN Academy logo.png"
+                src={resolveAssetUrl('YVN Academy logo.png','images','/static/images/YVN Academy logo.png')}
                 alt="YVN Academy"
                 className="footer-logo-img"
               />

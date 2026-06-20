@@ -38,7 +38,7 @@ import {
   UserCheck,
 } from "lucide-react";
 
-import { apiUrl } from "./lib/api";
+import { apiUrl, apiFetch } from "./lib/api";
 
 const resolveMediaSrc = (value, folder, fallback = "") => {
   if (!value) return fallback;
@@ -140,7 +140,7 @@ function Home() {
 
   // Fetch courses
   useEffect(() => {
-    fetch("/api/courses")
+    apiFetch("/api/courses")
       .then((res) => res.json())
       .then((data) => {
         setCourses(data);
@@ -396,7 +396,7 @@ function Home() {
             </a>
           </div>
           <div className="instructor-img">
-            <img src="/static/images/Instructor.jg.jpg" alt="Instructor" />
+            <img src={resolveImageSrc('Instructor.jg.jpg')} alt="Instructor" />
           </div>
         </div>
       </section>
@@ -464,7 +464,7 @@ function About() {
           <h2 className="about-section-title">Meet the Founder</h2>
           <div className="about-founder-card">
             <div className="about-founder-img">
-              <img src="/static/images/onyinyechi.jpg" alt="Founder" />
+              <img src={resolveImageSrc('onyinyechi.jpg')} alt="Founder" />
             </div>
             <div className="about-founder-text">
               <h3>Onyinyechi Annabel Eucharia</h3>
@@ -611,7 +611,7 @@ function Courses() {
     if (query) {
       url += `?q=${encodeURIComponent(query)}`;
     }
-    fetch(url)
+    apiFetch(url)
       .then((res) => res.json())
       .then((data) => {
         if (category) {
@@ -742,7 +742,7 @@ function CourseDetail() {
   const [ratingSubmitting, setRatingSubmitting] = useState(false);
 
   const fetchCourseDetails = useCallback(() => {
-    fetch(`/api/courses/${id}`)
+    apiFetch(`/api/courses/${id}`)
       .then((res) => res.json())
       .then((data) => {
         if (data.error) {
@@ -780,7 +780,7 @@ function CourseDetail() {
     }
     const method = wishlisted ? "DELETE" : "POST";
     try {
-      const res = await fetch(`/api/wishlist/${id}`, { method });
+      const res = await apiFetch(`/api/wishlist/${id}`, { method });
       const data = await res.json();
       if (res.ok) {
         setWishlisted(!wishlisted);
@@ -790,14 +790,13 @@ function CourseDetail() {
       }
     } catch {
       addFlash("Failed to update wishlist.");
-    }
-  };
+    }  };
 
   const handleRateSubmit = async (e) => {
     e.preventDefault();
     setRatingSubmitting(true);
     try {
-      const res = await fetch(`/api/courses/${id}/rate`, {
+      const res = await apiFetch(`/api/courses/${id}/rate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ stars, review: reviewText }),
@@ -1199,7 +1198,7 @@ function BuyCourse() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`/api/courses/${id}`)
+    apiFetch(`/api/courses/${id}`)
       .then((res) => res.json())
       .then((data) => {
         setCourse(data.course);
@@ -1223,7 +1222,7 @@ function BuyCourse() {
     formData.append("receipt", receipt);
 
     try {
-      const res = await fetch(`/api/courses/${id}/buy`, {
+      const res = await apiFetch(`/api/courses/${id}/buy`, {
         method: "POST",
         body: formData,
       });
@@ -1335,7 +1334,7 @@ function CourseContent() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`/api/courses/${id}/content`)
+    apiFetch(`/api/courses/${id}/content`)
       .then((res) => res.json())
       .then((data) => {
         if (data.error) {
@@ -1382,7 +1381,7 @@ function CourseContent() {
             }}
           >
             <iframe
-              src={`/api/courses/${id}/pdf`}
+              src={apiUrl(`/api/courses/${id}/pdf`)}
               width="100%"
               height="100%"
               style={{ border: "none" }}
@@ -1392,7 +1391,7 @@ function CourseContent() {
 
           <div style={{ display: "flex", gap: "16px" }}>
             <a
-              href={`/api/courses/${id}/download`}
+              href={apiUrl(`/api/courses/${id}/download`)}
               download
               className="hero-btn"
               style={{
@@ -1489,17 +1488,17 @@ function Dashboard() {
     try {
       if (user.isAdmin) {
         const [stRes, coRes, puRes] = await Promise.all([
-          fetch("/api/admin/students").then((r) => r.json()),
-          fetch("/api/admin/courses").then((r) => r.json()),
-          fetch("/api/admin/purchases").then((r) => r.json()),
+          apiFetch("/api/admin/students").then((r) => r.json()),
+          apiFetch("/api/admin/courses").then((r) => r.json()),
+          apiFetch("/api/admin/purchases").then((r) => r.json()),
         ]);
         setStudentsList(stRes);
         setCoursesList(coRes);
         setPurchasesList(puRes);
       } else {
         const [myRes, wiRes] = await Promise.all([
-          fetch("/api/dashboard").then((r) => r.json()),
-          fetch("/api/wishlist").then((r) => r.json()),
+          apiFetch("/api/dashboard").then((r) => r.json()),
+          apiFetch("/api/wishlist").then((r) => r.json()),
         ]);
         setStudentCourses(myRes);
         setWishlistCourses(wiRes);
@@ -1521,9 +1520,9 @@ function Dashboard() {
       try {
         if (user.isAdmin) {
           const [stRes, coRes, puRes] = await Promise.all([
-            fetch("/api/admin/students").then((r) => r.json()),
-            fetch("/api/admin/courses").then((r) => r.json()),
-            fetch("/api/admin/purchases").then((r) => r.json()),
+            apiFetch("/api/admin/students").then((r) => r.json()),
+            apiFetch("/api/admin/courses").then((r) => r.json()),
+            apiFetch("/api/admin/purchases").then((r) => r.json()),
           ]);
           if (cancelled) return;
           setStudentsList(stRes);
@@ -1531,8 +1530,8 @@ function Dashboard() {
           setPurchasesList(puRes);
         } else {
           const [myRes, wiRes] = await Promise.all([
-            fetch("/api/dashboard").then((r) => r.json()),
-            fetch("/api/wishlist").then((r) => r.json()),
+            apiFetch("/api/dashboard").then((r) => r.json()),
+            apiFetch("/api/wishlist").then((r) => r.json()),
           ]);
           if (cancelled) return;
           setStudentCourses(myRes);
@@ -1554,7 +1553,7 @@ function Dashboard() {
   // Admin Actions
   const handleApprove = async (id) => {
     try {
-      const res = await fetch(`/api/admin/purchases/${id}/approve`, {
+      const res = await apiFetch(`/api/admin/purchases/${id}/approve`, {
         method: "POST",
       });
       const data = await res.json();
@@ -1570,7 +1569,7 @@ function Dashboard() {
   const handleRejectSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch(`/api/admin/purchases/${rejectId}/reject`, {
+      const res = await apiFetch(`/api/admin/purchases/${rejectId}/reject`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ reason: rejectReason }),
@@ -1589,7 +1588,7 @@ function Dashboard() {
 
   const handleToggleCourse = async (id) => {
     try {
-      const res = await fetch(`/api/admin/courses/${id}/toggle`, {
+      const res = await apiFetch(`/api/admin/courses/${id}/toggle`, {
         method: "POST",
       });
       const data = await res.json();
@@ -1610,7 +1609,7 @@ function Dashboard() {
     )
       return;
     try {
-      const res = await fetch(`/api/admin/courses/${id}`, { method: "DELETE" });
+      const res = await apiFetch(`/api/admin/courses/${id}`, { method: "DELETE" });
       const data = await res.json();
       if (res.ok) {
         addFlash(data.message);
@@ -1623,7 +1622,7 @@ function Dashboard() {
 
   const handleRemoveWishlist = async (courseId) => {
     try {
-      const res = await fetch(`/api/wishlist/${courseId}`, {
+      const res = await apiFetch(`/api/wishlist/${courseId}`, {
         method: "DELETE",
       });
       if (res.ok) {
@@ -2506,7 +2505,7 @@ function Login() {
     <div className="auth-page">
       <div className="auth-illustration">
         <img
-          src="/static/images/Login illustration.png"
+          src={resolveImageSrc('Login illustration.png')}
           alt="Login illustration"
         />
       </div>
@@ -2604,7 +2603,7 @@ function Register() {
     <div className="auth-page">
       <div className="auth-illustration">
         <img
-          src="/static/images/Login illustration.png"
+          src={resolveImageSrc('Login illustration.png')}
           alt="Register illustration"
         />
       </div>
@@ -2716,7 +2715,7 @@ function AdminAddCourse() {
     if (pdfFile && courseType === "pdf") formData.append("pdf_file", pdfFile);
 
     try {
-      const res = await fetch("/api/admin/courses", {
+      const res = await apiFetch("/api/admin/courses", {
         method: "POST",
         body: formData,
       });
@@ -2920,7 +2919,7 @@ function AdminEditCourse() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    fetch(`/api/courses/${id}`)
+    apiFetch(`/api/courses/${id}`)
       .then((res) => res.json())
       .then((data) => {
         const c = data.course;
@@ -2954,7 +2953,7 @@ function AdminEditCourse() {
     if (pdfFile && courseType === "pdf") formData.append("pdf_file", pdfFile);
 
     try {
-      const res = await fetch(`/api/admin/courses/${id}`, {
+      const res = await apiFetch(`/api/admin/courses/${id}`, {
         method: "PUT",
         body: formData,
       });
