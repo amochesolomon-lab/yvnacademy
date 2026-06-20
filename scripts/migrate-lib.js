@@ -7,7 +7,8 @@ async function migrate(databaseUrl) {
 
   const databasePath = `${__dirname}/../database.db`;
   const sqliteDb = await open({ filename: databasePath, driver: sqlite3.Database });
-  const pg = new Pool({ connectionString: databaseUrl });
+  // Use SSL for Render Postgres (rejectUnauthorized false to accept managed cert)
+  const pg = new Pool({ connectionString: databaseUrl, ssl: { rejectUnauthorized: false } });
 
   try {
     console.log('Reading from SQLite:', databasePath);
