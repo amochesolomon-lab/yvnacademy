@@ -51,7 +51,9 @@ const resolveMediaSrc = (value, folder, fallback = "") => {
     return value;
   }
   // Use apiUrl so assets load from configured API base when deployed separately
-  return folder ? apiUrl(`/static/${folder}/${value}`) : fallback;
+  // URL-encode filenames to handle spaces and special chars
+  const filename = encodeURIComponent(value);
+  return folder ? apiUrl(`/static/${folder}/${filename}`) : fallback;
 };
 
 const resolveImageSrc = (value) =>
@@ -64,7 +66,7 @@ const HERO_SLIDES = [
     title: "Learn AI Without Limits",
     subtitle: "Build skills with AI tools and real projects",
     button: "Coming Soon!!",
-    image: "/static/images/hero.png",
+    image: "hero.png",
     link: "/course/1",
   },
   {
@@ -72,7 +74,7 @@ const HERO_SLIDES = [
     title: "Master Graphic Design",
     subtitle: "Learn Branding, Flyers, and Modern Design like a Pro",
     button: "Explore Course",
-    image: "/static/images/graphics 2.png",
+    image: "graphics 2.png",
     link: "/course/2",
   },
   {
@@ -80,7 +82,7 @@ const HERO_SLIDES = [
     title: "AI for Designers",
     subtitle: "Use AI tools to speed up your workflow",
     button: "Join Now",
-    image: "/static/images/graphics 3.png",
+    image: "graphics 3.png",
     link: "/course/3",
   },
 ];
@@ -214,13 +216,13 @@ function Home() {
             <div
               key={idx}
               className={`hero-slide ${currentSlide === idx ? "active" : ""}`}
-              style={{ backgroundImage: `url('${slide.image}')` }}
+              style={{ backgroundImage: `url('${resolveImageSrc(slide.image)}')` }}
             ></div>
           ))}
         </div>
 
         <div className="hero-mobile-img">
-          <img src={heroData[currentSlide].image} alt="Hero" />
+          <img src={resolveImageSrc(heroData[currentSlide].image)} alt="Hero" />
         </div>
 
         <div className="hero-overlay"></div>
