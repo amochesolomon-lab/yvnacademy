@@ -6,10 +6,11 @@
   "scripts": {
     "build": "npm run vercel-build",
     "generate:sitemap": "node scripts/generate-sitemap.mjs",
-    "vercel-build": "npm run generate:sitemap && npm --prefix client run build && rm -rf dist && cp -r client/dist dist",
+    "vercel-build": "npm run generate:sitemap && npm --prefix client ci && npm --prefix client run build && rm -rf dist && cp -r client/dist dist",
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "init-db": "node init-db.js"
+    "init-db": "node init-db.js",
+    "postinstall": "npm --prefix client install"
   },
   "dependencies": {
     "cookie-session": "^2.1.0",
