@@ -2222,7 +2222,8 @@ a { text-decoration: none; color: inherit; }
   .footer-bottom { font-size: 11px; padding: 14px; }
 
   /* Auth */
-  .auth-illustration { display: none; }
+  /* Show illustration on smaller screens as well — keep it compact */
+  .auth-illustration { display: flex; padding: 28px 20px; min-height: 200px; align-items: center; justify-content: center; }
   .auth-form-area { padding: 40px 20px; min-height: calc(100vh - 60px); }
   .auth-form h2 { font-size: 22px; }
 
@@ -5778,3 +5779,65 @@ body.dark .auth-form-area {
 body.dark .admin-table thead {
   background: #26282b;
 }
+
+/* === Accessibility & Mobile fixes: ensure auth illustration visible on mobile, improve dark-mode readability, and tighten mobile UI === */
+
+/* Make auth illustration visible on all viewports and keep it compact on small screens */
+.auth-illustration {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Replace a few commonly hardcoded dark text colors with theme-aware variable for better dark mode support */
+.learn-list li,
+.container p,
+.about-text-block p,
+.about-founder-text p,
+.rating-review,
+.course-preview-content {
+  color: var(--brand-black) !important;
+}
+
+/* Improve mobile hamburger visibility and target hit area */
+.mobile-menu-btn {
+  display: flex;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.mobile-menu-btn span {
+  display: block;
+  width: 24px;
+  height: 3px;
+  background: var(--brand-black);
+  border-radius: 3px;
+  transition: all 0.25s;
+}
+
+body.dark .mobile-menu-btn span {
+  background: #ffffff;
+}
+
+/* Mobile-specific tighten-ups */
+@media (max-width: 640px) {
+  .auth-page { padding: 0; }
+  .auth-illustration { padding: 18px; min-height: 180px; }
+  .auth-illustration img { max-width: 70%; }
+  .auth-form-area { padding: 24px; }
+  .auth-form { max-width: 420px; }
+  .mobile-nav-drawer { width: 85%; max-width: 360px; }
+  .mobile-close-btn { color: var(--text-muted); }
+}
+
+/* Small tablet adjustments */
+@media (max-width: 900px) {
+  .auth-illustration img { max-width: 220px; }
+}
+
+/* End of accessibility & mobile fixes */
