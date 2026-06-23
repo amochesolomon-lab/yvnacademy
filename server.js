@@ -16,8 +16,28 @@ try {
 }
 
 const app = express();
+const compression = require('compression');
 const PORT = process.env.PORT || 5000;
 app.set("trust proxy", 1);
+
+// Enable gzip/brotli compression for responses
+app.use(compression());
+
+// Simple in-memory cache for read-heavy endpoints (short TTL)
+const cache = new Map();
+function setCache(key, value, ttlSeconds = 15) {
+  const expires = Date.now() + ttlSeconds * 1000;
+  cache.set(key, { value, expires });
+}
+function getCache(key) {
+  const entry = cache.get(key);
+  if (!entry) return null;
+  if (Date.now() > entry.expires) {
+    cache.delete(key);
+    return null;
+  }
+  return entry.value;
+}
 
 // Admin emails list
 const ADMIN_EMAILS = ["theseraphicd3signer@gmail.com", "bellaonyi5@gmail.com"];
@@ -58,8 +78,22 @@ app.use(
   }),
 );
 
-// Serve static assets directly
-app.use("/static", express.static(path.join(__dirname, "static")));
+// Serve static assets directly with long cache for versioned files and no-cache for HTML
+app.use(
+  "/static",
+  express.static(path.join(__dirname, "static"), {
+    maxAge: "1y",
+    setHeaders(res, filePath) {
+      if (filePath.endsWith('.html')) {
+        // Always revalidate HTML
+        res.setHeader('Cache-Control', 'no-cache');
+      } else {
+        // Long-term cache for assets
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      }
+    },
+  }),
+);
 
 // Database helper
 let db;
@@ -412,7 +446,13 @@ app.get("/api/auth/me", (req, res) => {
 // Courses API
 app.get("/api/courses", async (req, res) => {
   const query = req.query.q ? req.query.q.trim() : "";
+  const cacheKey = `courses:${query || 'all'}`;
   try {
+    const cached = getCache(cacheKey);
+    if (cached) {
+      return res.json(cached);
+    }
+
     const database = await getDbConnection();
     let courses;
     if (query) {
@@ -423,6 +463,9 @@ app.get("/api/courses", async (req, res) => {
     } else {
       courses = await database.all("SELECT * FROM courses WHERE is_active=1");
     }
+
+    // Cache for a short time to reduce DB pressure
+    setCache(cacheKey, courses, 20);
     res.json(courses);
   } catch (err) {
     res.status(500).json({ error: "Internal database error." });
@@ -431,7 +474,11 @@ app.get("/api/courses", async (req, res) => {
 
 app.get("/api/courses/:id", async (req, res) => {
   const courseId = parseInt(req.params.id, 10);
+  const cacheKey = `course:${courseId}`;
   try {
+    const cached = getCache(cacheKey);
+    if (cached) return res.json(cached);
+
     const database = await getDbConnection();
     const course = await database.get("SELECT * FROM courses WHERE id = ?", [
       courseId,
@@ -477,14 +524,18 @@ app.get("/api/courses/:id", async (req, res) => {
         ) / 10;
     }
 
-    res.json({
+    const response = {
       course,
       purchased,
       wishlisted,
       ratings,
       avg_rating,
       user_rating,
-    });
+    };
+
+    // cache course details briefly
+    setCache(cacheKey, response, 30);
+    res.json(response);
   } catch (err) {
     res.status(500).json({ error: "Error retrieving course details." });
   }
