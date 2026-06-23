@@ -339,11 +339,19 @@ app.post("/api/auth/register", async (req, res) => {
     );
     res.json({ message: "Account created! Please log in." });
   } catch (err) {
-    if (err.message.includes("UNIQUE constraint failed: users.email")) {
-      return res
-        .status(400)
-        .json({ error: "Email already registered. Please log in." });
+    // Log error for debugging
+    console.error('Register error:', err && err.stack ? err.stack : err);
+
+    // Detect unique/email-duplicate errors for SQLite and Postgres (and other DBs)
+    const errMsg = String(err && (err.message || err));
+    const isUniqueViolation =
+      err.code === '23505' || // Postgres unique violation
+      /duplicate key value|unique constraint failed|UNIQUE constraint failed|already exists/i.test(errMsg);
+
+    if (isUniqueViolation) {
+      return res.status(400).json({ error: "Email already registered. Please log in." });
     }
+
     res.status(500).json({ error: "Database error. Please try again." });
   }
 });
