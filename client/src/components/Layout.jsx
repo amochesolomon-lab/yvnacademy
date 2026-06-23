@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { apiUrl, resolveAssetUrl } from '../lib/api';
+import { apiUrl, resolveAssetUrl, apiFetch } from '../lib/api';
 import { Link, useNavigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Search, Grid, Sun, Moon, LogOut, Menu, Home, BookOpenText, Info, LayoutDashboard, Heart, UserRoundPlus, LogIn } from 'lucide-react';
