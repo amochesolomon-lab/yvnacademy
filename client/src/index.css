@@ -5841,3 +5841,28 @@ body.dark .mobile-menu-btn span {
 }
 
 /* End of accessibility & mobile fixes */
+
+/* Password toggle styles */
+.password-field { position: relative; }
+.password-field input { padding-right: 86px; }
+.password-toggle {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--brand-green);
+  font-weight: 700;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+.password-toggle:focus { outline: 2px solid rgba(11,77,22,0.12); }
+body.dark .password-toggle { color: #ffffff; opacity: 0.95; }
+
+/* Slight polish for inputs and buttons */
+input, textarea, select { transition: box-shadow 0.18s, border-color 0.18s; }
+button.hero-btn { border-radius: 8px; box-shadow: 0 6px 18px rgba(11,77,22,0.06); }
+
+/* End of password & polish styles */
